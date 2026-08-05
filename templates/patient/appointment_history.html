@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointment History - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h1 class="fw-bold mb-1">Appointment History</h1>
+        <p class="text-muted mb-0">Review all your previous and upcoming medical appointment schedules.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'patient_book_appointment' %}" class="btn btn-primary shadow-sm">
+            <i class="fa-solid fa-calendar-plus me-2"></i>Book New Appointment
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+        <div class="table-responsive custom-table-container">
+            <table class="table custom-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Doctor Details</th>
+                        <th>Department</th>
+                        <th>Date & Time</th>
+                        <th>Reason for Visit</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if appointments %}
+                        {% for appt in appointments %}
+                            <tr>
+                                <td class="fw-semibold">#{{ appt.id }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ appt.doctor.full_name }}</div>
+                                    <small class="text-muted">{{ appt.doctor.specialization }}</small>
+                                </td>
+                                <td>{{ appt.department.department_name }}</td>
+                                <td>
+                                    <div>{{ appt.appointment_date }}</div>
+                                    <small class="text-muted">{{ appt.appointment_time|time:"g:i A" }}</small>
+                                </td>
+                                <td style="max-width: 200px;" class="text-truncate" title="{{ appt.reason }}">
+                                    {{ appt.reason }}
+                                </td>
+                                <td>
+                                    {% if appt.status == 'Pending' %}
+                                        <span class="badge-status badge-pending">Pending</span>
+                                    {% elif appt.status == 'Approved' %}
+                                        <span class="badge-status badge-approved">Approved</span>
+                                    {% elif appt.status == 'Completed' %}
+                                        <span class="badge-status badge-completed">Completed</span>
+                                    {% else %}
+                                        <span class="badge-status badge-cancelled">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if appt.status == 'Pending' or appt.status == 'Approved' %}
+                                        <a href="{% url 'patient_cancel_appointment' appt.id %}" class="btn btn-sm btn-outline-danger btn-confirm" data-confirm-msg="Are you sure you want to cancel appointment #{{ appt.id }}?">
+                                            <i class="fa-solid fa-trash me-1"></i>Cancel
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted small">No actions</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-receipt fa-2x mb-3 d-block text-secondary"></i>
+                                <span class="fw-semibold">You have not booked any appointments yet.</span>
+                                <p class="small text-muted mb-3">Get started by booking your first medical consultation.</p>
+                                <a href="{% url 'patient_book_appointment' %}" class="btn btn-teal text-white btn-sm px-4" style="background-color: var(--primary-color);">Book Appointment</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1 class="fw-bold mb-1">Administrative Dashboard</h1>
+        <p class="text-muted">Command center for clinic operations, staff records, and booking scheduling.</p>
+    </div>
+</div>
+
+<!-- Resource Counts Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card glass-card border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Total Patients</h6>
+                    <h3 class="fw-bold mb-0 text-primary">{{ patients_count }}</h3>
+                </div>
+                <div class="stat-icon text-primary">
+                    <i class="fa-solid fa-hospital-user"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card glass-card border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Active Doctors</h6>
+                    <h3 class="fw-bold mb-0 text-success">{{ doctors_count }}</h3>
+                </div>
+                <div class="stat-icon text-success">
+                    <i class="fa-solid fa-user-doctor"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card glass-card border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Departments</h6>
+                    <h3 class="fw-bold mb-0 text-info">{{ depts_count }}</h3>
+                </div>
+                <div class="stat-icon text-info">
+                    <i class="fa-solid fa-sitemap"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card glass-card border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Total Bookings</h6>
+                    <h3 class="fw-bold mb-0 text-teal" style="color: var(--primary-color);">{{ appts_count }}</h3>
+                </div>
+                <div class="stat-icon text-teal" style="color: var(--primary-color);">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment States Stats Row -->
+<div class="row g-3 mb-5">
+    <div class="col-12 col-md-4 col-lg">
+        <div class="card glass-card stat-card border-0 p-3 h-100" style="border-left: 5px solid #6366f1;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Today's Appts</h6>
+                    <h4 class="fw-bold mb-0 text-indigo" style="color: #6366f1;">{{ todays_appointments }}</h4>
+                </div>
+                <div class="text-indigo fs-3" style="color: #6366f1;">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="card glass-card stat-card pending border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Pending</h6>
+                    <h4 class="fw-bold mb-0 text-warning">{{ pending_appts }}</h4>
+                </div>
+                <div class="stat-icon text-warning fs-3">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+        <div class="card glass-card stat-card approved border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Approved</h6>
+                    <h4 class="fw-bold mb-0 text-success">{{ approved_appts }}</h4>
+                </div>
+                <div class="stat-icon text-success fs-3">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-6 col-lg">
+        <div class="card glass-card stat-card completed border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Completed</h6>
+                    <h4 class="fw-bold mb-0 text-info">{{ completed_appts }}</h4>
+                </div>
+                <div class="stat-icon text-info fs-3">
+                    <i class="fa-solid fa-flag-checkered"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-6 col-lg">
+        <div class="card glass-card stat-card cancelled border-0 p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="text-uppercase text-muted fw-bold small mb-1">Cancelled</h6>
+                    <h4 class="fw-bold mb-0 text-danger">{{ cancelled_appts }}</h4>
+                </div>
+                <div class="stat-icon text-danger fs-3">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Visual Charts Section -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 text-center">
+                <h5 class="fw-bold mb-3 text-start"><i class="fa-solid fa-chart-line text-teal me-2" style="color: var(--primary-color);"></i>Monthly Appointments</h5>
+                <hr>
+                <div style="height: 250px;">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 text-center">
+                <h5 class="fw-bold mb-3 text-start"><i class="fa-solid fa-chart-pie text-teal me-2" style="color: var(--primary-color);"></i>Status Distribution</h5>
+                <hr>
+                <div style="height: 250px;" class="d-flex justify-content-center">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 text-center">
+                <h5 class="fw-bold mb-3 text-start"><i class="fa-solid fa-sitemap text-teal me-2" style="color: var(--primary-color);"></i>Department-wise Appointments</h5>
+                <hr>
+                <div style="height: 250px;">
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4 text-center">
+                <h5 class="fw-bold mb-3 text-start"><i class="fa-solid fa-user-md text-teal me-2" style="color: var(--primary-color);"></i>Doctor-wise Appointments</h5>
+                <hr>
+                <div style="height: 250px;">
+                    <canvas id="doctorChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Section: Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-bolt text-teal me-2" style="color: var(--primary-color);"></i>Quick Admin Actions</h5>
+                <hr>
+                <div class="d-grid gap-3">
+                    <a href="{% url 'admin_manage_departments' %}" class="btn btn-outline-teal text-start py-3" style="border-color: var(--primary-color); color: var(--primary-color);">
+                        <i class="fa-solid fa-plus me-2"></i>Add New Department
+                    </a>
+                    <a href="{% url 'admin_manage_doctors' %}" class="btn btn-outline-teal text-start py-3" style="border-color: var(--primary-color); color: var(--primary-color);">
+                        <i class="fa-solid fa-user-plus me-2"></i>Add New Doctor Specialist
+                    </a>
+                    <a href="{% url 'admin_reports' %}" class="btn btn-outline-secondary text-start py-3">
+                        <i class="fa-solid fa-file-invoice me-2"></i>Generate Reports Portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Section: Recent Booking Requests -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-clock text-teal me-2" style="color: var(--primary-color);"></i>Recent Appointments Queue</h5>
+                    <a href="{% url 'admin_manage_appointments' %}" class="small text-teal fw-semibold text-decoration-none" style="color: var(--primary-color);">View All <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <hr>
+
+                <div class="table-responsive custom-table-container">
+                    <table class="table custom-table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Schedule</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_appointments %}
+                                {% for appt in recent_appointments %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ appt.patient.user.get_full_name|default:appt.patient.user.username }}</div>
+                                            <small class="text-muted">ID: #{{ appt.patient.id }}</small>
+                                        </td>
+                                        <td>
+                                            <div>{{ appt.doctor.full_name }}</div>
+                                            <small class="text-muted">{{ appt.department.department_name }}</small>
+                                        </td>
+                                        <td>
+                                            <div>{{ appt.appointment_date }}</div>
+                                            <small class="text-muted">{{ appt.appointment_time|time:"g:i A" }}</small>
+                                        </td>
+                                        <td>
+                                            {% if appt.status == 'Pending' %}
+                                                <span class="badge-status badge-pending">Pending</span>
+                                            {% elif appt.status == 'Approved' %}
+                                                <span class="badge-status badge-approved">Approved</span>
+                                            {% elif appt.status == 'Completed' %}
+                                                <span class="badge-status badge-completed">Completed</span>
+                                            {% else %}
+                                                <span class="badge-status badge-cancelled">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <a href="{% url 'admin_update_appointment' appt.id %}" class="btn btn-sm btn-outline-teal" style="color: var(--primary-color); border-color: var(--primary-color);" title="Resolve & Add Remarks">
+                                                    <i class="fa-solid fa-comment-medical"></i>
+                                                </a>
+                                                {% if appt.status == 'Pending' %}
+                                                    <a href="{% url 'admin_update_appointment_status' appt.id 'Approved' %}" class="btn btn-sm btn-success" title="Approve">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </a>
+                                                    <a href="{% url 'admin_update_appointment_status' appt.id 'Cancelled' %}" class="btn btn-sm btn-danger btn-confirm" data-confirm-msg="Reject appointment #{{ appt.id }}?" title="Reject">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </a>
+                                                {% elif appt.status == 'Approved' %}
+                                                    <a href="{% url 'admin_update_appointment_status' appt.id 'Completed' %}" class="btn btn-sm btn-info text-white" title="Complete">
+                                                        <i class="fa-solid fa-circle-check"></i>
+                                                    </a>
+                                                    <a href="{% url 'admin_update_appointment_status' appt.id 'Cancelled' %}" class="btn btn-sm btn-outline-danger btn-confirm" data-confirm-msg="Cancel appointment #{{ appt.id }}?" title="Cancel">
+                                                        <i class="fa-solid fa-ban"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-folder-open me-2 fa-lg"></i>No recent booking requests.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Global fonts options configuration for Chart.js
+        Chart.defaults.font.family = "'Inter', 'Outfit', sans-serif";
+        Chart.defaults.color = "#475569"; // slate 600
+
+        // 1. Status Distribution Doughnut Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Approved', 'Completed', 'Cancelled'],
+                datasets: [{
+                    data: [
+                        {{ pending_appts }}, 
+                        {{ approved_appts }}, 
+                        {{ completed_appts }}, 
+                        {{ cancelled_appts }}
+                    ],
+                    backgroundColor: [
+                        '#ff9800', // Orange (Warning)
+                        '#4CAF50', // Green (Success/Approved)
+                        '#03a9f4', // Info (Completed)
+                        '#ef4444'  // Red (Danger)
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+
+        // 2. Monthly Appointments Line Chart
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: {{ months_labels|safe }},
+                datasets: [{
+                    label: 'Appointments Booked',
+                    data: {{ months_counts|safe }},
+                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                    borderColor: '#1976D2', // Medical Blue
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#1976D2',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 3. Department-wise Bar Chart
+        const deptCtx = document.getElementById('deptChart').getContext('2d');
+        new Chart(deptCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ dept_labels|safe }},
+                datasets: [{
+                    label: 'Appointments',
+                    data: {{ dept_counts|safe }},
+                    backgroundColor: '#26A69A', // Teal
+                    borderRadius: 6,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 4. Doctor-wise Horizontal Bar Chart
+        const doctorCtx = document.getElementById('doctorChart').getContext('2d');
+        new Chart(doctorCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ doc_labels|safe }},
+                datasets: [{
+                    label: 'Appointments',
+                    data: {{ doc_counts|safe }},
+                    backgroundColor: '#4CAF50', // Accent Green
+                    borderRadius: 6,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Makes it a horizontal bar chart
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

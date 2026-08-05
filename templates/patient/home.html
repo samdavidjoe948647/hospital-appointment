@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Welcome - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block content %}
+<!-- Full-Width Hero Section -->
+<div class="row mb-5">
+    <div class="col-12 p-0">
+        <div class="hero-section rounded-4 px-4 px-md-5">
+            <div class="row align-items-center py-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="badge bg-light text-teal mb-3 px-3 py-2 text-uppercase fw-semibold" style="color: var(--primary-color);">Modern Healthcare Solutions</span>
+                    <h1 class="hero-title mb-4">SYDNEY CLINIC</h1>
+                    <p class="lead mb-4 text-white-50">Experience a seamless path to wellness. Book and manage appointments with certified medical professionals, view your status, and access specialized treatment in just a few clicks.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'patient_book_appointment' %}" class="btn btn-warning btn-lg shadow-sm">
+                                <i class="fa-solid fa-calendar-check me-2"></i>Book an Appointment
+                            </a>
+                            <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fa-solid fa-gauge me-2"></i>My Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{% url 'patient_login' %}" class="btn btn-warning btn-lg shadow-sm">
+                                <i class="fa-solid fa-right-to-bracket me-2"></i>Patient Portal
+                            </a>
+                            <a href="{% url 'patient_register' %}" class="btn btn-outline-light btn-lg">
+                                <i class="fa-solid fa-user-plus me-2"></i>Register Now
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Core Features Section -->
+<div class="row g-4 mb-5 text-center">
+    <div class="col-md-4">
+        <div class="card glass-card h-100 border-0 p-4">
+            <div class="card-body">
+                <div class="mb-3 text-teal">
+                    <span class="p-3 bg-light rounded-circle d-inline-block text-success">
+                        <i class="fa-solid fa-house-medical-circle-check fa-2x"></i>
+                    </span>
+                </div>
+                <h4 class="card-title fw-bold">Select Department</h4>
+                <p class="card-text text-muted">Browse departments such as Cardiology, Pediatrics, Neurology, and more to find the exact healthcare field you need.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card glass-card h-100 border-0 p-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="p-3 bg-light rounded-circle d-inline-block text-primary">
+                        <i class="fa-solid fa-user-doctor fa-2x"></i>
+                    </span>
+                </div>
+                <h4 class="card-title fw-bold">Professional Doctors</h4>
+                <p class="card-text text-muted">Consult with certified, highly skilled doctors selected specifically for their excellence and dedication in their specialization.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card glass-card h-100 border-0 p-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="p-3 bg-light rounded-circle d-inline-block text-warning">
+                        <i class="fa-solid fa-hospital-user fa-2x"></i>
+                    </span>
+                </div>
+                <h4 class="card-title fw-bold">Real-time History</h4>
+                <p class="card-text text-muted">Track your booking status in real-time. Cancel appointments if plans change, and maintain a complete medical scheduling history.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Counter -->
+<div class="row g-4 mb-5 text-center bg-teal rounded-4 p-5 text-white shadow-md" style="background-color: var(--primary-color);">
+    <div class="col-md-4">
+        <h2 class="display-4 fw-bold">{{ departments_count }}</h2>
+        <p class="mb-0 text-white-50"><i class="fa-solid fa-hospital me-2"></i>Medical Departments</p>
+    </div>
+    <div class="col-md-4 border-start border-end border-light border-opacity-25">
+        <h2 class="display-4 fw-bold">{{ doctors_count }}</h2>
+        <p class="mb-0 text-white-50"><i class="fa-solid fa-user-md me-2"></i>Specialist Doctors</p>
+    </div>
+    <div class="col-md-4">
+        <h2 class="display-4 fw-bold">{{ patients_count }}</h2>
+        <p class="mb-0 text-white-50"><i class="fa-solid fa-users me-2"></i>Happy Registered Patients</p>
+    </div>
+</div>
+
+<!-- Departments List -->
+<div class="row mb-4">
+    <div class="col-12 text-center mb-4">
+        <h2 class="fw-bold">Our Medical Specializations</h2>
+        <p class="text-muted">Explore the medical fields currently active at SYDNEY CLINIC</p>
+    </div>
+    <div class="col-md-8 mx-auto">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <ul class="list-group list-group-flush">
+                {% if departments %}
+                    {% for dept in departments %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3 px-4">
+                            <div>
+                                <i class="fa-solid fa-circle-chevron-right text-teal me-2" style="color: var(--primary-color);"></i>
+                                <span class="fw-semibold">{{ dept.department_name }}</span>
+                            </div>
+                            <span class="badge bg-teal-light text-teal rounded-pill" style="background-color: var(--primary-light); color: var(--primary-color);">
+                                {{ dept.doctors.count }} Doctor{{ dept.doctors.count|pluralize }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="list-group-item text-center py-4 text-muted">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>No departments configured yet. Check back soon!
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

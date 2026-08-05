@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Doctors - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-12">
+        <h1 class="fw-bold mb-1">Manage Specialist Doctors</h1>
+        <p class="text-muted">Register new medical professionals and manage schedules.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Add Doctor Form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus-circle text-teal me-2" style="color: var(--primary-color);"></i>Add Doctor</h5>
+                <hr>
+
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.full_name.id_for_label }}" class="form-label fw-semibold">Doctor Name</label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.specialization.id_for_label }}" class="form-label fw-semibold">Specialization</label>
+                        {{ form.specialization }}
+                        {% if form.specialization.errors %}
+                            <div class="text-danger small mt-1">{{ form.specialization.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.department.id_for_label }}" class="form-label fw-semibold">Department</label>
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                            <div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold">Email Address</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label fw-semibold">Phone Number</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.qualification.id_for_label }}" class="form-label fw-semibold">Qualification</label>
+                            {{ form.qualification }}
+                            {% if form.qualification.errors %}
+                                <div class="text-danger small mt-1">{{ form.qualification.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.experience.id_for_label }}" class="form-label fw-semibold">Experience (Years)</label>
+                            {{ form.experience }}
+                            {% if form.experience.errors %}
+                                <div class="text-danger small mt-1">{{ form.experience.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.available_days.id_for_label }}" class="form-label fw-semibold">Available Days</label>
+                        {{ form.available_days }}
+                        {% if form.available_days.errors %}
+                            <div class="text-danger small mt-1">{{ form.available_days.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.available_time.id_for_label }}" class="form-label fw-semibold">Available Time</label>
+                        {{ form.available_time }}
+                        {% if form.available_time.errors %}
+                            <div class="text-danger small mt-1">{{ form.available_time.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.consultation_fee.id_for_label }}" class="form-label fw-semibold">Fee ($)</label>
+                            {{ form.consultation_fee }}
+                            {% if form.consultation_fee.errors %}
+                                <div class="text-danger small mt-1">{{ form.consultation_fee.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 shadow-sm mt-2">
+                        <i class="fa-solid fa-plus me-2"></i>Register Doctor
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Doctors List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-md text-teal me-2" style="color: var(--primary-color);"></i>Registered Doctors</h5>
+                <hr>
+
+                <div class="table-responsive custom-table-container">
+                    <table class="table custom-table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Doctor Info</th>
+                                <th>Department</th>
+                                <th>Contact</th>
+                                <th>Schedule</th>
+                                <th>Fee & Exp</th>
+                                <th>Status</th>
+                                <th class="text-end" style="width: 120px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if doctors %}
+                                {% for doc in doctors %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ doc.full_name }}</div>
+                                            <small class="text-muted">{{ doc.specialization }}</small>
+                                            {% if doc.qualification %}
+                                                <div class="text-secondary" style="font-size: 0.75rem;">{{ doc.qualification }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary rounded-pill">{{ doc.department.department_name }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="small"><i class="fa-solid fa-envelope text-muted me-1"></i>{{ doc.email }}</div>
+                                            <div class="small"><i class="fa-solid fa-phone text-muted me-1"></i>{{ doc.phone }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small fw-semibold">{{ doc.available_days }}</div>
+                                            <div class="small text-muted">{{ doc.available_time }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">${{ doc.consultation_fee }}</div>
+                                            <div class="small text-muted">{{ doc.experience }} yr{{ doc.experience|pluralize }} exp</div>
+                                        </td>
+                                        <td>
+                                            {% if doc.status == 'Active' %}
+                                                <span class="badge bg-success text-white">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger text-white">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <a href="{% url 'admin_edit_doctor' doc.id %}" class="btn btn-sm btn-outline-teal" style="color: var(--primary-color); border-color: var(--primary-color);" title="Edit">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </a>
+                                                <a href="{% url 'admin_delete_doctor' doc.id %}" class="btn btn-sm btn-outline-danger btn-confirm" data-confirm-msg="Are you sure you want to delete doctor specialist '{{ doc.full_name }}'?" title="Delete">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-circle-info me-2 fa-lg"></i>No doctors registered. Add one using the registration panel.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

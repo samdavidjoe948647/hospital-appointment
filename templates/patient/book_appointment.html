@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Appointment - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <div class="card glass-card border-0 shadow-lg p-3">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <span class="p-3 bg-light rounded-circle d-inline-block mb-3 text-teal" style="color: var(--primary-color);">
+                        <i class="fa-solid fa-calendar-check fa-2x"></i>
+                    </span>
+                    <h2 class="fw-bold">Book a Medical Appointment</h2>
+                    <p class="text-muted">Schedule a consultation with our experienced healthcare professionals.</p>
+                </div>
+                <hr class="mb-4">
+
+                <div class="row g-4">
+                    <!-- Left Column: The Form -->
+                    <div class="col-lg-7">
+                        <form method="POST" class="needs-validation" id="bookingForm" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="row g-3">
+                                <!-- Department Selection -->
+                                <div class="col-12">
+                                    <label for="{{ form.department.id_for_label }}" class="form-label fw-semibold">Medical Department</label>
+                                    {{ form.department }}
+                                    {% if form.department.errors %}
+                                        <div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Doctor Selection -->
+                                <div class="col-12">
+                                    <label for="{{ form.doctor.id_for_label }}" class="form-label fw-semibold">Specialist Doctor</label>
+                                    {{ form.doctor }}
+                                    {% if form.doctor.errors %}
+                                        <div class="text-danger small mt-1">{{ form.doctor.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Appointment Date -->
+                                <div class="col-md-6">
+                                    <label for="{{ form.appointment_date.id_for_label }}" class="form-label fw-semibold">Appointment Date</label>
+                                    {{ form.appointment_date }}
+                                    {% if form.appointment_date.errors %}
+                                        <div class="text-danger small mt-1">{{ form.appointment_date.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Past dates cannot be selected.</small>
+                                </div>
+
+                                <!-- Appointment Time -->
+                                <div class="col-md-6">
+                                    <label for="{{ form.appointment_time.id_for_label }}" class="form-label fw-semibold">Preferred Time</label>
+                                    {{ form.appointment_time }}
+                                    {% if form.appointment_time.errors %}
+                                        <div class="text-danger small mt-1">{{ form.appointment_time.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Select an active slot.</small>
+                                </div>
+
+                                <!-- Reason -->
+                                <div class="col-12">
+                                    <label for="{{ form.reason.id_for_label }}" class="form-label fw-semibold">Reason for Appointment</label>
+                                    {{ form.reason }}
+                                    {% if form.reason.errors %}
+                                        <div class="text-danger small mt-1">{{ form.reason.errors.0 }}</div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Briefly summarize your symptoms or visitation purpose.</small>
+                                </div>
+                            </div>
+
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger mt-3 mb-0">
+                                    {% for error in form.non_field_errors %}
+                                        <i class="fa-solid fa-circle-exclamation me-2"></i>{{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <div class="mt-4 d-flex gap-3">
+                                <button type="submit" class="btn btn-primary btn-lg flex-grow-1 shadow-sm">
+                                    <i class="fa-solid fa-circle-check me-2"></i>Submit Booking Request
+                                </button>
+                                <a href="{% url 'patient_dashboard' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Doctor Availability Details Card -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 bg-light rounded-4 p-3 h-100 position-sticky" style="top: 100px;">
+                            <div class="card-body d-flex flex-column h-100 justify-content-center" id="doctorDetailsPlaceholder">
+                                <div class="text-center text-muted py-5">
+                                    <i class="fa-solid fa-user-md fa-3x mb-3 text-teal-light" style="color: var(--primary-color); opacity: 0.5;"></i>
+                                    <h5>Doctor Schedule & Details</h5>
+                                    <p class="small mb-0">Please choose a medical department and select a specialist doctor to view schedule availability, fees, and days.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body" id="doctorDetailsContainer" style="display: none;">
+                                <h5 class="fw-bold mb-3 text-teal" style="color: var(--primary-color);"><i class="fa-solid fa-user-doctor me-2"></i>Selected Doctor</h5>
+                                <hr class="my-2">
+                                <h4 class="fw-bold text-dark mb-1" id="detName">Dr. Name</h4>
+                                <span class="badge bg-primary mb-3" id="detSpecialty">Heart Specialist</span>
+                                
+                                <div class="mt-3 d-grid gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-4 text-success me-3"><i class="fa-solid fa-circle-dollar-to-slot"></i></span>
+                                        <div>
+                                            <div class="text-muted small">Consultation Fee</div>
+                                            <div class="fw-bold fs-5 text-dark" id="detFee">$0.00</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-4 text-info me-3"><i class="fa-solid fa-calendar-days"></i></span>
+                                        <div>
+                                            <div class="text-muted small">Available Days</div>
+                                            <div class="fw-semibold text-dark" id="detDays">Monday - Friday</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex align-items-center">
+                                        <span class="fs-4 text-warning me-3"><i class="fa-solid fa-clock"></i></span>
+                                        <div>
+                                            <div class="text-muted small">Available Hours</div>
+                                            <div class="fw-semibold text-dark" id="detTime">09:00 - 17:00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const departmentSelect = document.getElementById('id_department');
+        const doctorSelect = document.getElementById('id_doctor');
+        
+        const placeholder = document.getElementById('doctorDetailsPlaceholder');
+        const container = document.getElementById('doctorDetailsContainer');
+        
+        const detName = document.getElementById('detName');
+        const detSpecialty = document.getElementById('detSpecialty');
+        const detFee = document.getElementById('detFee');
+        const detDays = document.getElementById('detDays');
+        const detTime = document.getElementById('detTime');
+
+        let doctorsList = [];
+
+        // Fetch and cache doctor list details on department change
+        if (departmentSelect && doctorSelect) {
+            // Override static script dropdown setup to capture full details
+            departmentSelect.addEventListener('change', function() {
+                const deptId = this.value;
+                doctorSelect.innerHTML = '<option value="">--------- Choose Doctor ---------</option>';
+                
+                placeholder.style.display = 'block';
+                container.style.display = 'none';
+                
+                if (!deptId) return;
+
+                fetch(`/ajax/get-doctors-by-department/?department_id=${deptId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        doctorsList = data; // Cache
+                        data.forEach(doctor => {
+                            const option = document.createElement('option');
+                            option.value = doctor.id;
+                            option.textContent = `${doctor.doctor_name} (${doctor.specialization})`;
+                            doctorSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching doctors:', error));
+            });
+
+            // Update details block on doctor change
+            doctorSelect.addEventListener('change', function() {
+                const docId = parseInt(this.value);
+                if (!docId) {
+                    placeholder.style.display = 'block';
+                    container.style.display = 'none';
+                    return;
+                }
+
+                const doc = doctorsList.find(d => d.id === docId);
+                if (doc) {
+                    detName.textContent = doc.doctor_name;
+                    detSpecialty.textContent = doc.specialization;
+                    detFee.textContent = `$${parseFloat(doc.consultation_fee).toFixed(2)}`;
+                    detDays.textContent = doc.available_days;
+                    detTime.textContent = doc.available_time;
+                    
+                    placeholder.style.display = 'none';
+                    container.style.display = 'block';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

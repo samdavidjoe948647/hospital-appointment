@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Resolve Appointment #{{ appointment.id }} - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card glass-card border-0 shadow-lg p-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <span class="p-3 bg-light rounded-circle d-inline-block mb-3 text-teal" style="color: var(--primary-color);">
+                        <i class="fa-solid fa-calendar-check fa-2x"></i>
+                    </span>
+                    <h2 class="fw-bold">Resolve Appointment #{{ appointment.id }}</h2>
+                    <p class="text-muted">Set the status and add administrator remarks for this appointment request.</p>
+                </div>
+                <hr class="mb-4">
+
+                <!-- Patient & Appointment details summary -->
+                <div class="bg-light p-3 rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-uppercase text-teal mb-3" style="color: var(--primary-color);">Appointment Information</h6>
+                    <div class="row g-2 small">
+                        <div class="col-sm-4 text-muted">Patient:</div>
+                        <div class="col-sm-8 fw-semibold">{{ appointment.patient.user.get_full_name|default:appointment.patient.user.username }}</div>
+                        
+                        <div class="col-sm-4 text-muted">Doctor:</div>
+                        <div class="col-sm-8">{{ appointment.doctor.full_name }} ({{ appointment.doctor.specialization }})</div>
+                        
+                        <div class="col-sm-4 text-muted">Department:</div>
+                        <div class="col-sm-8">{{ appointment.department.department_name }}</div>
+                        
+                        <div class="col-sm-4 text-muted">Schedule Date:</div>
+                        <div class="col-sm-8">{{ appointment.appointment_date }} at {{ appointment.appointment_time|time:"g:i A" }}</div>
+                        
+                        <div class="col-sm-4 text-muted">Reason:</div>
+                        <div class="col-sm-8 text-secondary">{{ appointment.reason }}</div>
+                    </div>
+                </div>
+
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">Update Status</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.admin_remarks.id_for_label }}" class="form-label fw-semibold">Administrator Remarks</label>
+                        {{ form.admin_remarks }}
+                        {% if form.admin_remarks.errors %}
+                            <div class="text-danger small mt-1">{{ form.admin_remarks.errors.0 }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Add notes regarding doctor consultation rooms, prep instructions, or reasons for rejection/cancellation.</small>
+                    </div>
+                    
+                    <div class="mt-4 d-flex gap-3">
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1 shadow-sm">
+                            <i class="fa-solid fa-save me-2"></i>Save Resolution
+                        </button>
+                        <a href="{% url 'admin_manage_appointments' %}" class="btn btn-outline-secondary btn-lg">Back to Queue</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

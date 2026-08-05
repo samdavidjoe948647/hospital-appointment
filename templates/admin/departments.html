@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Departments - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-12">
+        <h1 class="fw-bold mb-1">Manage Hospital Departments</h1>
+        <p class="text-muted">Configure clinic departments and specialties.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Add Department Form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-plus-circle text-teal me-2" style="color: var(--primary-color);"></i>Add Department</h5>
+                <hr>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.department_name.id_for_label }}" class="form-label fw-semibold">Department Name</label>
+                        {{ form.department_name }}
+                        {% if form.department_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.department_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold">Status</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                            <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 shadow-sm mt-2">
+                        <i class="fa-solid fa-plus me-2"></i>Create Department
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Departments List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-sitemap text-teal me-2" style="color: var(--primary-color);"></i>Active Departments</h5>
+                <hr>
+
+                <div class="table-responsive custom-table-container">
+                    <table class="table custom-table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">ID</th>
+                                <th>Department Name</th>
+                                <th>Description</th>
+                                <th>Doctor Count</th>
+                                <th>Status</th>
+                                <th class="text-end" style="width: 150px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if departments %}
+                                {% for dept in departments %}
+                                    <tr>
+                                        <td><strong>#{{ dept.id }}</strong></td>
+                                        <td><span class="fw-semibold">{{ dept.department_name }}</span></td>
+                                        <td><span class="text-muted small">{{ dept.description|default:"No description provided" }}</span></td>
+                                        <td>
+                                            <span class="badge bg-teal-light text-teal rounded-pill" style="background-color: var(--primary-light); color: var(--primary-color); font-weight: 600;">
+                                                {{ dept.num_doctors }} Doctor{{ dept.num_doctors|pluralize }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if dept.status == 'Active' %}
+                                                <span class="badge bg-success text-white">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger text-white">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end gap-1">
+                                                <a href="{% url 'admin_edit_department' dept.id %}" class="btn btn-sm btn-outline-teal" style="color: var(--primary-color); border-color: var(--primary-color);" title="Edit">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                </a>
+                                                <a href="{% url 'admin_delete_department' dept.id %}" class="btn btn-sm btn-outline-danger btn-confirm" data-confirm-msg="Are you sure you want to delete department '{{ dept.department_name }}'? This will delete all doctors and appointments associated with this department." title="Delete">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <i class="fa-solid fa-circle-info me-2 fa-lg"></i>No departments configured. Add one on the left panel.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+
+{% block title %}Appointment Reports - SYDNEY CLINIC HAMS{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Styling optimization for print layout */
+    @media print {
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+        nav, footer, .navbar, .btn, form, .no-print, .btn-group, .alert {
+            display: none !important;
+        }
+        .content-wrapper {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+        .custom-table-container {
+            border: none !important;
+            border-radius: 0 !important;
+        }
+        .custom-table thead {
+            background-color: #f1f5f9 !important;
+            color: #000000 !important;
+            border-bottom: 2px solid #000000 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center no-print">
+    <div class="col-md-8">
+        <h1 class="fw-bold mb-1">Clinic Appointment Reports</h1>
+        <p class="text-muted mb-0">Generate, review, print, and export reports of appointments by category or date.</p>
+    </div>
+    {% if appointments %}
+        <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end no-print">
+            <a href="{% url 'admin_reports_export' %}?report_type={{ report_type }}&daily_date={{ daily_date }}&monthly_month={{ monthly_month }}&doctor_id={{ doctor_id }}&department_id={{ department_id }}&patient_id={{ patient_id }}&start_date={{ start_date }}&end_date={{ end_date }}" class="btn btn-outline-success">
+                <i class="fa-solid fa-file-csv me-2"></i>Export to CSV
+            </a>
+            <button onclick="window.print()" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-print me-2"></i>Print/Save Report
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Report Generator Form Card -->
+<div class="card border-0 shadow-sm rounded-4 p-3 mb-4 no-print">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-filter text-teal me-2" style="color: var(--primary-color);"></i>Configure Report Filters</h5>
+        <hr>
+        <form method="GET" class="row g-3 align-items-end" id="reportForm">
+            <div class="col-md-3">
+                <label for="report_type" class="form-label fw-semibold">Report Type</label>
+                <select name="report_type" id="report_type" class="form-select" required>
+                    <option value="">-- Choose Type --</option>
+                    <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily Appointments</option>
+                    <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly Appointments</option>
+                    <option value="doctor" {% if report_type == 'doctor' %}selected{% endif %}>Doctor-wise Report</option>
+                    <option value="department" {% if report_type == 'department' %}selected{% endif %}>Department-wise Report</option>
+                    <option value="patient_history" {% if report_type == 'patient_history' %}selected{% endif %}>Patient Appointment History</option>
+                    <option value="date_range" {% if report_type == 'date_range' %}selected{% endif %}>Custom Date Range</option>
+                </select>
+            </div>
+
+            <!-- Dynamic Input Containers toggled by JS -->
+            <div class="col-md-6 dynamic-input" id="div_daily" style="display: none;">
+                <label for="daily_date" class="form-label fw-semibold">Select Date</label>
+                <input type="date" name="daily_date" id="daily_date" value="{{ daily_date }}" class="form-control">
+            </div>
+
+            <div class="col-md-6 dynamic-input" id="div_monthly" style="display: none;">
+                <label for="monthly_month" class="form-label fw-semibold">Select Month</label>
+                <input type="month" name="monthly_month" id="monthly_month" value="{{ monthly_month }}" class="form-control">
+            </div>
+
+            <div class="col-md-6 dynamic-input" id="div_doctor" style="display: none;">
+                <label for="doctor_id" class="form-label fw-semibold">Select Doctor</label>
+                <select name="doctor_id" id="doctor_id" class="form-select">
+                    <option value="">-- Select Doctor --</option>
+                    {% for doc in doctors %}
+                        <option value="{{ doc.id }}" {% if doctor_id == doc.id %}selected{% endif %}>{{ doc.full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6 dynamic-input" id="div_department" style="display: none;">
+                <label for="department_id" class="form-label fw-semibold">Select Department</label>
+                <select name="department_id" id="department_id" class="form-select">
+                    <option value="">-- Select Department --</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept.id }}" {% if department_id == dept.id %}selected{% endif %}>{{ dept.department_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6 dynamic-input" id="div_patient" style="display: none;">
+                <label for="patient_id" class="form-label fw-semibold">Select Patient</label>
+                <select name="patient_id" id="patient_id" class="form-select">
+                    <option value="">-- Select Patient --</option>
+                    {% for pat in patients %}
+                        <option value="{{ pat.id }}" {% if patient_id == pat.id %}selected{% endif %}>{{ pat.user.get_full_name|default:pat.user.username }} ({{ pat.phone }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6 dynamic-input" id="div_date_range" style="display: none;">
+                <div class="row">
+                    <div class="col-6">
+                        <label for="start_date" class="form-label fw-semibold">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" value="{{ start_date }}" class="form-control">
+                    </div>
+                    <div class="col-6">
+                        <label for="end_date" class="form-label fw-semibold">End Date</label>
+                        <input type="date" name="end_date" id="end_date" value="{{ end_date }}" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-teal w-100 text-white" style="background-color: var(--primary-color);">
+                    <i class="fa-solid fa-gears me-1"></i>Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if appointments is not None %}
+    <!-- Report Results Header -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold mb-1">SYDNEY CLINIC Appointment Report</h2>
+            <p class="text-muted mb-0">Report Type: <strong class="text-capitalize">{{ report_type|default:"Custom" }}</strong></p>
+            {% if report_type == 'daily' %}
+                <p class="text-muted">For Date: <strong>{{ daily_date }}</strong></p>
+            {% elif report_type == 'monthly' %}
+                <p class="text-muted">For Month: <strong>{{ monthly_month }}</strong></p>
+            {% elif report_type == 'doctor' %}
+                <p class="text-muted">For Doctor: <strong>{% for doc in doctors %}{% if doc.id == doctor_id %}{{ doc.full_name }}{% endif %}{% endfor %}</strong></p>
+            {% elif report_type == 'department' %}
+                <p class="text-muted">For Department: <strong>{% for dept in departments %}{% if dept.id == department_id %}{{ dept.department_name }}{% endif %}{% endfor %}</strong></p>
+            {% elif report_type == 'patient_history' %}
+                <p class="text-muted">For Patient: <strong>{% for pat in patients %}{% if pat.id == patient_id %}{{ pat.user.get_full_name|default:pat.user.username }}{% endif %}{% endfor %}</strong></p>
+            {% elif report_type == 'date_range' or start_date and end_date %}
+                <p class="text-muted">Period: <strong>{{ start_date }}</strong> to <strong>{{ end_date }}</strong></p>
+            {% endif %}
+            <span class="text-muted small no-print">Report compile timestamp: {% now "Y-m-d H:i:s" %}</span>
+        </div>
+        
+        <!-- Report Metrics Summary Row -->
+        <div class="row g-3 text-center mb-4">
+            <div class="col-3">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h5 class="text-muted small text-uppercase fw-semibold mb-1">Total Scheduled</h5>
+                    <h3 class="fw-bold mb-0 text-teal" style="color: var(--primary-color);">{{ stats.total }}</h3>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h5 class="text-muted small text-uppercase fw-semibold mb-1">Approved</h5>
+                    <h3 class="fw-bold mb-0 text-success">{{ stats.approved }}</h3>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h5 class="text-muted small text-uppercase fw-semibold mb-1">Completed</h5>
+                    <h3 class="fw-bold mb-0 text-info">{{ stats.completed }}</h3>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h5 class="text-muted small text-uppercase fw-semibold mb-1">Pending</h5>
+                    <h3 class="fw-bold mb-0 text-warning">{{ stats.pending }}</h3>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="p-3 bg-light rounded-3 border">
+                    <h5 class="text-muted small text-uppercase fw-semibold mb-1">Cancelled/Rejected</h5>
+                    <h3 class="fw-bold mb-0 text-danger">{{ stats.cancelled|add:stats.rejected }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Details Table -->
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-list text-teal me-2 no-print" style="color: var(--primary-color);"></i>Detailed Schedule Log</h5>
+        <div class="table-responsive custom-table-container">
+            <table class="table custom-table table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 80px;">Appt ID</th>
+                        <th>Patient Name</th>
+                        <th>Doctor / Specialty</th>
+                        <th>Department</th>
+                        <th>Date & Time</th>
+                        <th>Reason for Appointment</th>
+                        <th style="width: 120px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if appointments %}
+                        {% for appt in appointments %}
+                            <tr>
+                                <td>#{{ appt.id }}</td>
+                                <td>
+                                    <span class="fw-semibold">{{ appt.patient.user.get_full_name|default:appt.patient.user.username }}</span>
+                                    <div class="text-muted small">Phone: {{ appt.patient.phone }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ appt.doctor.full_name }}</div>
+                                    <small class="text-muted">{{ appt.doctor.specialization }}</small>
+                                </td>
+                                <td>{{ appt.department.department_name }}</td>
+                                <td>{{ appt.appointment_date }} at {{ appt.appointment_time|time:"g:i A" }}</td>
+                                <td>
+                                    <div class="text-secondary small">{{ appt.reason }}</div>
+                                    {% if appt.admin_remarks %}
+                                        <div class="text-teal small mt-1" style="color: var(--secondary-color);"><strong>Remarks:</strong> {{ appt.admin_remarks }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if appt.status == 'Pending' %}
+                                        <span class="badge-status badge-pending d-block text-center">Pending</span>
+                                    {% elif appt.status == 'Approved' %}
+                                        <span class="badge-status badge-approved d-block text-center">Approved</span>
+                                    {% elif appt.status == 'Completed' %}
+                                        <span class="badge-status badge-completed d-block text-center">Completed</span>
+                                    {% else %}
+                                        <span class="badge-status badge-cancelled d-block text-center">{{ appt.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                No appointments found matching the report criteria.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <!-- Help Banner before generating report -->
+    <div class="text-center py-5 text-muted no-print">
+        <i class="fa-solid fa-file-circle-exclamation fa-3x mb-3 text-teal" style="color: var(--primary-color);"></i>
+        <h4>No Report Generated</h4>
+        <p>Please select a report type and fill in the filter criteria, then click "Generate".</p>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reportTypeSelect = document.getElementById('report_type');
+        const dynamicInputs = document.querySelectorAll('.dynamic-input');
+        
+        function updateFields() {
+            // Hide all dynamic inputs
+            dynamicInputs.forEach(div => {
+                div.style.display = 'none';
+                // Remove required attribute from child elements to allow form submission
+                const inputs = div.querySelectorAll('input, select');
+                inputs.forEach(input => input.removeAttribute('required'));
+            });
+            
+            const selectedVal = reportTypeSelect.value;
+            if (selectedVal === 'daily') {
+                const div = document.getElementById('div_daily');
+                div.style.display = 'block';
+                div.querySelector('input').setAttribute('required', 'required');
+            } else if (selectedVal === 'monthly') {
+                const div = document.getElementById('div_monthly');
+                div.style.display = 'block';
+                div.querySelector('input').setAttribute('required', 'required');
+            } else if (selectedVal === 'doctor') {
+                const div = document.getElementById('div_doctor');
+                div.style.display = 'block';
+                div.querySelector('select').setAttribute('required', 'required');
+            } else if (selectedVal === 'department') {
+                const div = document.getElementById('div_department');
+                div.style.display = 'block';
+                div.querySelector('select').setAttribute('required', 'required');
+            } else if (selectedVal === 'patient_history') {
+                const div = document.getElementById('div_patient');
+                div.style.display = 'block';
+                div.querySelector('select').setAttribute('required', 'required');
+            } else if (selectedVal === 'date_range') {
+                const div = document.getElementById('div_date_range');
+                div.style.display = 'block';
+                div.querySelectorAll('input').forEach(i => i.setAttribute('required', 'required'));
+            }
+        }
+        
+        if (reportTypeSelect) {
+            reportTypeSelect.addEventListener('change', updateFields);
+            updateFields(); // run initially
+        }
+    });
+</script>
+{% endblock %}
